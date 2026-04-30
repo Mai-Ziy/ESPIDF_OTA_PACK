@@ -1,0 +1,2 @@
+# ESPIDF_OTA_PACK
+针对IDF框架的WIFI_OTA空中升级组件(基于IDF5.5.3版本)
