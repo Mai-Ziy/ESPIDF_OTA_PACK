@@ -433,3 +433,35 @@ esp_err_t https_ota_perform_update(const https_ota_config_t *config)
     }
     return ret;
 }
+
+/* 新增的去初始化函数（已实现但未在项目中调用） */
+esp_err_t https_ota_deinit(void)
+{
+    if (!s_pack_inited) {
+        return ESP_OK;
+    }
+
+    /* 注销事件处理器（若已注册） */
+    esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler);
+    esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler);
+
+    /* 删除事件组 */
+    if (s_wifi_event_group) {
+        vEventGroupDelete(s_wifi_event_group);
+        s_wifi_event_group = NULL;
+    }
+
+    /* 停止并反初始化 Wifi（忽略返回值） */
+    esp_err_t err = esp_wifi_stop();
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "esp_wifi_stop returned 0x%x", err);
+    }
+    err = esp_wifi_deinit();
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "esp_wifi_deinit returned 0x%x", err);
+    }
+
+    s_pack_inited = false;
+    ESP_LOGI(TAG, "https_ota_pack deinitialized");
+    return ESP_OK;
+}
